@@ -46,7 +46,7 @@ class UsersService extends MoleculerService {
       const hash = res[0].password
       const validPassword = await validatePassword(ctx.params.password, hash);
       if (!validPassword) return new Error('Password is not correct');
-      const generateAccessToken = await broker.call('jwtauth.generateAccessToken', {id: res[0].id, email: res[0].email, role: res[0].role }, {});
+      const generateAccessToken = await broker.call('jwtauth.generateAccessToken', {id: res[0].id, email: res[0].email, role: res[0].role}, {});
       return Promise.resolve(generateAccessToken)
     }
 
@@ -73,6 +73,12 @@ class UsersService extends MoleculerService {
     }
 
     return Promise.resolve("New user created")
+  }
+
+  @Action()
+  async getAll(ctx: any) {
+    const users = await broker.call("users.find")
+    return Promise.resolve(users);
   }
 
   started() { // Reserved for moleculer, fired when started
