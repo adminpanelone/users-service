@@ -30,11 +30,11 @@ function comparePromise(plainPassword: string, hash: string): Promise<boolean> {
   })
 }
 
-export async function hashPassword(password: string) {
+export async function hashPassword(password: string): Promise<string> {
   const salt = await genSaltPromise();
   return await hashPromise(password, salt);
 }
 
-export async function validatePassword(plainPassword: string, password: string) {
+export async function validatePassword(plainPassword: string, password: string): Promise<boolean> {
   return await comparePromise(plainPassword, password)
 };
