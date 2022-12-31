@@ -56,8 +56,6 @@ class UsersService extends MoleculerService {
   // With options
   @Action()
   async register(ctx: any) {
-    console.log("Sign UP")
-
     const password = await hashPassword(ctx.params.password);
     const newUser = {
       email: ctx.params.email,
