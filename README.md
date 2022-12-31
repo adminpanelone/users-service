@@ -43,5 +43,6 @@ $ docker-compose -f stack.yml up
 
 ```
 CREATE DATABASE adminpanel;
-GRANT ALL PRIVILEGES ON adminpanel.* TO 'user123'@'%' IDENTIFIED BY 'pass123';
+CREATE USER glenda@'%' IDENTIFIED BY 'putinPidor2022';
+GRANT ALL PRIVILEGES ON adminpanel.* TO 'glenda'@'%' IDENTIFIED BY 'putinPidor2022';
 ```
