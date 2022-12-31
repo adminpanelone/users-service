@@ -4,7 +4,8 @@ import SqlAdapter from 'moleculer-db-adapter-sequelize';
 import Sequelize from 'sequelize';
 import DbService from 'moleculer-db';
 import {hashPassword, validatePassword} from './passwordTools';
-
+require('dotenv').config({path: `.env.${process.env.NODE_ENV}`});
+const MARIADB_URI = String(process.env.MARIADB_URI);
 const settingsServiceBroker = {
   nodeID: "users-1",
   transporter: "nats://localhost:4222",
@@ -16,7 +17,7 @@ const broker = new ServiceBroker(settingsServiceBroker);
 const settingsCreateService = {
   name: "users",
   mixins: [DbService],
-  adapter: new SqlAdapter("mariadb://glenda:putinPidor2022@localhost:3306/adminpanel"),
+  adapter: new SqlAdapter(MARIADB_URI),
   model: {
     name: "user",
     define: {
@@ -31,7 +32,6 @@ const settingsCreateService = {
     }
   },
 };
-
 
 @Service(settingsCreateService)
 class UsersService extends MoleculerService {
@@ -49,7 +49,6 @@ class UsersService extends MoleculerService {
     return Promise.resolve('Not exist')
   }
 
-  // With options
   @Action()
   async register(ctx: any) {
     const password = await hashPassword(ctx.params.password);
