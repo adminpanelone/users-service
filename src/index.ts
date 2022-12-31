@@ -31,9 +31,6 @@ const settingsCreateService = {
       // Options from https://sequelize.org/docs/v6/moved/models-definition/
     }
   },
-  // settings: {
-  //   fields: ["_id", "email", "role", "password"],
-  // },
 };
 
 
