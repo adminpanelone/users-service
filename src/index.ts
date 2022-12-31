@@ -4,8 +4,7 @@ import SqlAdapter from 'moleculer-db-adapter-sequelize';
 import Sequelize from 'sequelize';
 import DbService from 'moleculer-db';
 import {hashPassword, validatePassword} from './passwordTools';
-// require('dotenv').config({path: `.env.${process.env.NODE_ENV}`});
-// const SALT_LENGTH = process.env.SALT_LENGTH;
+
 const settingsServiceBroker = {
   nodeID: "users-1",
   transporter: "nats://localhost:4222",
