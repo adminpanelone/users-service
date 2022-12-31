@@ -3,9 +3,9 @@ import {Service, Action, Event, Method} from 'moleculer-decorators';
 import SqlAdapter from 'moleculer-db-adapter-sequelize';
 import Sequelize from 'sequelize';
 import DbService from 'moleculer-db';
-import {hashPassword} from './passwordTools';
-require('dotenv').config({path: `.env.${process.env.NODE_ENV}`});
-const SALT_LENGTH = process.env.SALT_LENGTH;
+import {hashPassword, validatePassword} from './passwordTools';
+// require('dotenv').config({path: `.env.${process.env.NODE_ENV}`});
+// const SALT_LENGTH = process.env.SALT_LENGTH;
 const settingsServiceBroker = {
   nodeID: "users-1",
   transporter: "nats://localhost:4222",
@@ -41,14 +41,16 @@ const settingsCreateService = {
 class UsersService extends MoleculerService {
   @Action()
   async login(ctx: any) {
-    console.log("CTX: ")
-    console.log(ctx)
     const [res, metadata] = await this.adapter.db.query(`SELECT * FROM users WHERE email = '${ctx.params.email}' LIMIT 1`)
     if (res.length) {
-      console.log(res)
+      const hash = res[0].password
+      const validPassword = await validatePassword(ctx.params.password, hash);
+      if (!validPassword) return new Error('Password is not correct');
+      const generateAccessToken = await broker.call('jwtauth.generateAccessToken', {id: res[0].id, email: res[0].email, role: res[0].role }, {});
+      return Promise.resolve(generateAccessToken)
     }
 
-    return Promise.resolve(ctx)
+    return Promise.resolve('Not exist')
   }
 
   // With options
