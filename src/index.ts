@@ -23,9 +23,11 @@ const settingsCreateService = {
     define: {
       email: Sequelize.STRING,
       password: Sequelize.STRING,
-      role: Sequelize.STRING,
+      roles: Sequelize.STRING,
       avatar: Sequelize.STRING,
-      accessToken: Sequelize.STRING
+      accessToken: Sequelize.STRING,
+      firstName: Sequelize.STRING,
+      lastName: Sequelize.STRING
     },
     options: {
       // Options from https://sequelize.org/docs/v6/moved/models-definition/
@@ -42,7 +44,7 @@ class UsersService extends MoleculerService {
       const hash = res[0].password
       const validPassword = await validatePassword(ctx.params.password, hash);
       if (!validPassword) return new Error('Password is not correct');
-      const generateAccessToken = await broker.call('jwtauth.generateAccessToken', {id: res[0].id, email: res[0].email, role: res[0].role}, {});
+      const generateAccessToken = await broker.call('jwtauth.generateAccessToken', {id: res[0].id, email: res[0].email, roles: res[0].role}, {});
       return Promise.resolve(generateAccessToken)
     }
 
@@ -55,7 +57,9 @@ class UsersService extends MoleculerService {
     const newUser = {
       email: ctx.params.email,
       password: password,
-      role: 'User'
+      firstName: ctx.params.firstName,
+      lastName: ctx.params.lastName,
+      roles: 'User'
     }
     const [res, metadata] = await this.adapter.db.query(`SELECT email FROM users WHERE email = '${ctx.params.email}' LIMIT 1`)
 
