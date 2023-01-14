@@ -3,6 +3,7 @@ import {Service, Action, Event, Method} from 'moleculer-decorators';
 import SqlAdapter from 'moleculer-db-adapter-sequelize';
 import Sequelize from 'sequelize';
 import DbService from 'moleculer-db';
+import NotFoundError from './CustomErrors/NotFoundError';
 import {hashPassword, validatePassword} from './passwordTools';
 require('dotenv').config({path: `.env.${process.env.NODE_ENV}`});
 const MARIADB_URI = String(process.env.MARIADB_URI);
@@ -44,11 +45,10 @@ class UsersService extends MoleculerService {
       const hash = res[0].password
       const validPassword = await validatePassword(ctx.params.password, hash);
       if (!validPassword) return new Error('Password is not correct');
-      const generateAccessToken = await broker.call('jwtauth.generateAccessToken', {id: res[0].id, email: res[0].email, roles: res[0].role}, {});
+      const generateAccessToken = await broker.call('jwtauth.generateAccessToken', {id: res[0].id, email: res[0].email}, {});
       return Promise.resolve(generateAccessToken)
     }
-
-    return Promise.resolve('Not exist')
+    throw new NotFoundError("User not found", "USER_NOT_FOUND");
   }
 
   @Action()
@@ -59,23 +59,61 @@ class UsersService extends MoleculerService {
       password: password,
       firstName: ctx.params.firstName,
       lastName: ctx.params.lastName,
-      roles: 'User'
+      roles: 'USER'
     }
     const [res, metadata] = await this.adapter.db.query(`SELECT email FROM users WHERE email = '${ctx.params.email}' LIMIT 1`)
 
+    interface INewUser {
+      id: number,
+      email: string,
+      password: string,
+      firstName: string,
+      lastName: string,
+      roles: string,
+      updatedAt: string,
+      createdAt: string,
+      _id: string | undefined
+    }
+    let result: any = null;
+
     if (!res.length) {
-      await broker.call("users.create", newUser)
-    } else {
-      return Promise.reject("Exist")
+      const _newUser: INewUser = await broker.call("users.create", newUser)
+      result = {
+        email: _newUser.email,
+        firstName: _newUser.firstName,
+        lastName: _newUser.lastName,
+        roles: _newUser.roles,
+      }
+    }
+    if (res.length) {
+      ctx.meta.$statusCode = 404;
+      return Promise.resolve({
+        message: 'User exist',
+        code: 404,
+        type: 'USER_EXIST',
+        data: {},
+      })
     }
 
-    return Promise.resolve("New user created")
+    ctx.meta.$statusCode = 200;
+    return Promise.resolve({
+      message: 'User created',
+      code: 200,
+      type: 'USER_CREATED',
+      data: {email: 'test@test.localhost', roles: 'USER'},
+    })
   }
 
   @Action()
   async getAll(ctx: any) {
     const users = await broker.call("users.find")
     return Promise.resolve(users);
+  }
+
+  @Action()
+  hello(ctx: any){
+    ctx.meta.$statusCode = 404;
+    return Promise.resolve("Hello");
   }
 
   started() { // Reserved for moleculer, fired when started
