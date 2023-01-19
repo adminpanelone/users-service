@@ -86,19 +86,19 @@ class UsersService extends MoleculerService {
       }
     }
     if (res.length) {
-      ctx.meta.$statusCode = 404;
+      ctx.meta.$statusCode = 409;
       return Promise.resolve({
         message: 'User exist',
-        code: 404,
+        code: 409,
         type: 'USER_EXIST',
         data: {},
       })
     }
 
-    ctx.meta.$statusCode = 200;
+    ctx.meta.$statusCode = 201;
     return Promise.resolve({
       message: 'User created',
-      code: 200,
+      code: 201,
       type: 'USER_CREATED',
       data: {email: 'test@test.localhost', roles: 'USER'},
     })
@@ -106,13 +106,18 @@ class UsersService extends MoleculerService {
 
   @Action()
   async getAll(ctx: any) {
-    const users = await broker.call("users.find")
-    return Promise.resolve(users);
+    try{
+      const users = await broker.call("users.find");
+      return Promise.resolve(users);
+    }catch(err){
+      ctx.meta.$statusCode = 500;
+      return Promise.reject(err);
+    }  
   }
 
   @Action()
   hello(ctx: any){
-    ctx.meta.$statusCode = 404;
+    ctx.meta.$statusCode = 409;
     return Promise.resolve("Hello");
   }
 
